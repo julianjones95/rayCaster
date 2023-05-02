@@ -2,6 +2,7 @@
 #include <iostream>
 #include <SDL.h>
 #define PI 3.14259265
+#define Rad PI/180
 
 void handleEvent(bool *appIsRunning, bool *upArrowDown, bool *downArrowDown, bool *leftArrowDown, bool *rightArrowDown) {
     SDL_Event event;
@@ -87,18 +88,18 @@ void moveRectangle (SDL_Rect *playerRect, int resW, int resH, bool upArrowDown, 
 int map[] = {
         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,
+        1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,1,1,0,0,0,0,0,0,1,0,0,0,1,
+        1,0,0,0,1,0,1,1,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 
@@ -148,34 +149,39 @@ void drawMap2D(SDL_Renderer *renderer) {
 }
 
 
+float rayDist(float ax, float ay, float bx, float by, float ang) {
+    return ( sqrt(pow(bx-ax,2) + pow(by-ay,2)) );
+}
+
+
 void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
 
-    int mx, my, mp, dof;
+    int mx, my, mp, dof, bitshift =5;
     float rayX, rayY, rayAngle = angle, xo, yo;     
-    for (int r=0; r<1; r++){
+    rayAngle = angle - (Rad)*30;
+    if(rayAngle < 0) rayAngle += 2*PI;
+    if(rayAngle > 2*PI) rayAngle -= 2*PI;
+    
+    for (int r=0; r<60; r++){ 
         // Check Horizontal lines
         dof=0;
+        float distH = 10000000, hx=playerRect->x, hy=playerRect->y;
         float aTan = -1/tan(rayAngle);
-        // Looking up
+        // Character is Looking up
         if(rayAngle > PI) {
-            rayY = (((int)(playerRect->y)>>5)<<5) - 0.0001; 
+            // This takes the pointer and bit shifts it 6 places right
+            // then "bitshift" places left giving an interval of 2^bitshift
+            // This effectively increments rayY by 2^bitshift each vertical box
+            rayY = (((int)(playerRect->y)>>bitshift)<<bitshift) - 0.0001; 
             rayX = ((playerRect->y) - rayY) * aTan + (playerRect->x);
-            std::cout << rayY << std::endl;
-            //std::cout << rayX << std::endl;
-            std::cout << playerRect->y << std::endl;
-            yo = -32;
+            yo = -pow(2,bitshift);
             xo = -yo*aTan;
         }
-        // Looking Down
+        // Character is Looking Down
         if(rayAngle < PI) {
-            // This takes the pointer and bit shifts it 6 places right
-            // then 6 places left giving an interval of 64
-            rayY = (((int)(playerRect->y)>>5)<<5) + 32; 
+            rayY = (((int)(playerRect->y)>>bitshift)<<bitshift) + pow(2,bitshift); 
             rayX = ((playerRect->y) - rayY) * aTan + (playerRect->x);
-            std::cout << rayY << std::endl;
-            std::cout << playerRect->y << std::endl;
-            //std::cout << rayX << std::endl;
-            yo = 32;
+            yo = pow(2,bitshift);
             xo = -yo*aTan;
         }
         if(rayAngle==0 || rayAngle == PI) {
@@ -189,7 +195,10 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
             my=(int)(rayY)>>5; 
             mp=my*mapX+mx;
           //  std::cout << mp <<std::endl;
-            if(mp<mapX*mapY && map[mp]==1) { //Hit a wall
+            if(0<mp && mp<mapX*mapY && map[mp]==1) { //Hit a wall
+                hx = rayX;
+                hy = rayY;
+                distH = rayDist(playerRect->x,playerRect->y,hx,hy, rayAngle);
                 dof=8; 
             }
             else{ 
@@ -199,15 +208,68 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
             }
         }
     
-    SDL_RenderDrawLine(renderer, playerRect->x, playerRect->y, rayX, rayY);
+        // Check Vertical lines
+        dof=0;
+        float distV = 10000000, vx=playerRect->x, vy=playerRect->y;
+        float Tan = -1 * tan(rayAngle);
+        // Character is Looking left
+        if(rayAngle > PI/2 && rayAngle < 3*PI /2) {
+            rayX = (((int)(playerRect->x)>>bitshift)<<bitshift) - 0.0001; 
+            rayY = ((playerRect->x) - rayX) * Tan + (playerRect->y);
+            xo = -pow(2,bitshift);
+            yo = -xo*Tan;
+        }
+        // Character is Looking right
+        if(rayAngle < PI/2 || rayAngle > 3*PI/2 ) {
+            rayX = (((int)(playerRect->x)>>bitshift)<<bitshift) + pow(2,bitshift); 
+            rayY = ((playerRect->x) - rayX) * Tan + (playerRect->y);
+            xo = pow(2,bitshift);
+            yo = -xo*Tan;
+        }
+        if(rayAngle==0 || rayAngle == PI) {
+            rayX = playerRect->x; 
+            rayY = playerRect->y; 
+            dof = 8;
+        }
 
+        while(dof<8){
+            mx=(int)(rayX)>>5; 
+            my=(int)(rayY)>>5; 
+            mp=my*mapX+mx;
+          //  std::cout << mp <<std::endl;
+            if( mp>0 && mp<mapX*mapY && map[mp]==1) { //Hit a wall
+                vx = rayX;
+                vy = rayY;
+                distV = rayDist(playerRect->x,playerRect->y,vx,vy, rayAngle);
+                dof=8; 
+            }
+            else{ 
+                rayX += xo;
+                rayY += yo;
+                dof +=1;
+            }
+        }
+
+    if(distV>distH) { 
+        rayX = hx;
+        rayY = hy;   
+    } 
+    else {
+        rayX = vx;
+        rayY = vy;
+    }
+    SDL_RenderDrawLine(renderer, playerRect->x, playerRect->y, rayX, rayY);
+   
+    rayAngle += Rad;
+    if(rayAngle < 0) rayAngle += 2*PI;
+    if(rayAngle > 2*PI) rayAngle -= 2*PI;
     }
 
 
 }
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
+
     int resW = 512, resH = 512; //1440
     SDL_Rect playerRect;
     playerRect.w = resW/64;

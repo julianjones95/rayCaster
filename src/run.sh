@@ -7,13 +7,13 @@
 
 # this worked for me on MacOS 12.4 Monterey, using SDL2 version 2.24.0
 
-rm app	
+rm out	
 
 # exit script at first error
 set -u -e
 
-# Compile it and output to executable called 'app'
-clang++ app.cpp -I/Library/Frameworks/SDL2.framework/Headers -F/Library/Frameworks -framework SDL2 -o app
+# Compile it and output to executable called 'out'
+clang++ app.cpp -I/Library/Frameworks/SDL2.framework/Headers -F/Library/Frameworks -framework SDL2 -o out
 
-# runs the app
-./app
+# runs the out
+./out
