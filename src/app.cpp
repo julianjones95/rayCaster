@@ -87,7 +87,7 @@ void moveRectangle (SDL_Rect *playerRect, int resW, int resH, bool upArrowDown, 
 int map[] = {
         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
@@ -97,7 +97,7 @@ int map[] = {
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,
+        1,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
@@ -132,10 +132,10 @@ void drawMap2D(SDL_Renderer *renderer) {
     for(int x =0; x< mapX; x++) {
         for(int y=0; y< mapY; y++) { 
                 SDL_Rect wall;
-                wall.x = x*(720/mapX)+1; //1440
-                wall.y = y*(720/mapY)+1;
-                wall.w = (720/mapX)-1; //1440
-                wall.h = (720/mapY)-1;
+                wall.x = x*(512/mapX)+1; //1440
+                wall.y = y*(512/mapY)+1;
+                wall.w = (512/mapX)-1; //1440
+                wall.h = (512/mapY)-1;
             if(map[y*mapX + x]==1) {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &wall);
@@ -156,24 +156,42 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
         // Check Horizontal lines
         dof=0;
         float aTan = -1/tan(rayAngle);
+        // Looking up
         if(rayAngle > PI) {
-            rayY = (((int)playerRect->y>>6)<<6) - 0.0001; 
-            rayX = (playerRect->y - rayY)* aTan+playerRect->x;
-            yo = -(720/mapX)+1;
+            rayY = (((int)(playerRect->y)>>5)<<5) - 0.0001; 
+            rayX = ((playerRect->y) - rayY) * aTan + (playerRect->x);
+            std::cout << rayY << std::endl;
+            //std::cout << rayX << std::endl;
+            std::cout << playerRect->y << std::endl;
+            yo = -32;
             xo = -yo*aTan;
         }
+        // Looking Down
         if(rayAngle < PI) {
-            rayY = (((int)playerRect->y>>6)<<6) + (720/mapX)+1; 
-            rayX = (playerRect->y - rayY)* aTan+playerRect->x;
-            yo = (720/mapX)+1;
+            // This takes the pointer and bit shifts it 6 places right
+            // then 6 places left giving an interval of 64
+            rayY = (((int)(playerRect->y)>>5)<<5) + 32; 
+            rayX = ((playerRect->y) - rayY) * aTan + (playerRect->x);
+            std::cout << rayY << std::endl;
+            std::cout << playerRect->y << std::endl;
+            //std::cout << rayX << std::endl;
+            yo = 32;
             xo = -yo*aTan;
         }
-        if(rayAngle==0 || rayAngle == PI) {rayX = playerRect->x; rayY = playerRect->y; dof = 8;};
+        if(rayAngle==0 || rayAngle == PI) {
+            rayX = playerRect->x; 
+            rayY = playerRect->y; 
+            dof = 8;
+        }
+
         while(dof<8){
-            mx=(int)(rayX)>>6; 
-            my=(int)(rayY)>>6; 
+            mx=(int)(rayX)>>5; 
+            my=(int)(rayY)>>5; 
             mp=my*mapX+mx;
-            if(mp<mapX*mapY && map[mp]==1) {dof=8;} // Hit a wall
+          //  std::cout << mp <<std::endl;
+            if(mp<mapX*mapY && map[mp]==1) { //Hit a wall
+                dof=8; 
+            }
             else{ 
                 rayX += xo;
                 rayY += yo;
@@ -190,10 +208,10 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
 
 int main(int argc, char const *argv[])
 {
-    int resW = 1440/2, resH = 720;
+    int resW = 512, resH = 512; //1440
     SDL_Rect playerRect;
-    playerRect.w = resW/16;
-    playerRect.h = resH/16;
+    playerRect.w = resW/64;
+    playerRect.h = resH/64;
     playerRect.x = resW/2 - playerRect.w/2;
     playerRect.y = resH/2 - playerRect.h/2;
     
@@ -251,6 +269,7 @@ int main(int argc, char const *argv[])
         // Handle movement of character
         moveRectangle(&playerRect, resW, resH, upArrowDown, downArrowDown, leftArrowDown, rightArrowDown);
 
+        SDL_SetRenderDrawColor(renderer, 0, 105, 180, SDL_ALPHA_OPAQUE);
         drawRays3D(&playerRect, renderer);       
 
         SDL_SetRenderDrawColor(renderer, 255, 105, 180, SDL_ALPHA_OPAQUE);
