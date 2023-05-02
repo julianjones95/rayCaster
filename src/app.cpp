@@ -2,7 +2,7 @@
 #include <iostream>
 #include <SDL.h>
 #define PI 3.14259265
-#define Rad PI/180
+#define Rad PI/1440 //This is actually an eigth radian
 
 void handleEvent(bool *appIsRunning, bool *upArrowDown, bool *downArrowDown, bool *leftArrowDown, bool *rightArrowDown) {
     SDL_Event event;
@@ -157,12 +157,12 @@ float rayDist(float ax, float ay, float bx, float by, float ang) {
 void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
 
     int mx, my, mp, dof, bitshift =5;
-    float rayX, rayY, rayAngle = angle, xo, yo;     
-    rayAngle = angle - (Rad)*30;
+    float rayX, rayY, rayAngle = angle, xo, yo, finalDist;     
+    rayAngle = angle - (Rad)*256;
     if(rayAngle < 0) rayAngle += 2*PI;
     if(rayAngle > 2*PI) rayAngle -= 2*PI;
     
-    for (int r=0; r<60; r++){ 
+    for (int r=0; r<512; r++){ 
         // Check Horizontal lines
         dof=0;
         float distH = 10000000, hx=playerRect->x, hy=playerRect->y;
@@ -190,7 +190,7 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
             dof = 8;
         }
 
-        while(dof<8){
+        while(dof<16){
             mx=(int)(rayX)>>5; 
             my=(int)(rayY)>>5; 
             mp=my*mapX+mx;
@@ -199,7 +199,7 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
                 hx = rayX;
                 hy = rayY;
                 distH = rayDist(playerRect->x,playerRect->y,hx,hy, rayAngle);
-                dof=8; 
+                dof=16; 
             }
             else{ 
                 rayX += xo;
@@ -232,7 +232,7 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
             dof = 8;
         }
 
-        while(dof<8){
+        while(dof<16){
             mx=(int)(rayX)>>5; 
             my=(int)(rayY)>>5; 
             mp=my*mapX+mx;
@@ -241,7 +241,7 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
                 vx = rayX;
                 vy = rayY;
                 distV = rayDist(playerRect->x,playerRect->y,vx,vy, rayAngle);
-                dof=8; 
+                dof=16; 
             }
             else{ 
                 rayX += xo;
@@ -253,27 +253,52 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
     if(distV>distH) { 
         rayX = hx;
         rayY = hy;   
+        finalDist = distH;
+        SDL_SetRenderDrawColor(renderer, 80, 105, 180, SDL_ALPHA_OPAQUE);
+
     } 
     else {
         rayX = vx;
         rayY = vy;
+        finalDist = distV;
+        SDL_SetRenderDrawColor(renderer, 0, 105, 180, SDL_ALPHA_OPAQUE);
+
     }
     SDL_RenderDrawLine(renderer, playerRect->x, playerRect->y, rayX, rayY);
    
+    // Draw the 3D Walls
+    
+    float diffAngle = rayAngle-angle;
+    if(diffAngle<0) {
+        diffAngle += 2*PI;
+    }
+    if(diffAngle> 2*PI) {
+        diffAngle -= 2*PI;
+    }
+    finalDist = finalDist * cos(diffAngle);
+    float lineHeight = (32*512)/finalDist;
+    float lineOffset = 256 - lineHeight/2;
+    SDL_RenderDrawLine(renderer, r*1 + 513, lineOffset, r*1 + 513, lineHeight+lineOffset);
+
+    if(lineHeight>512) {
+        lineHeight = 512;
+    }
+
+    // Increment the loop by 1 degree and end loop
     rayAngle += Rad;
     if(rayAngle < 0) rayAngle += 2*PI;
     if(rayAngle > 2*PI) rayAngle -= 2*PI;
-    }
 
+    }
 
 }
 
 int main(int argc, char const *argv[]) {
 
-    int resW = 512, resH = 512; //1440
+    int resW = 512 + 512, resH = 512; //1440
     SDL_Rect playerRect;
-    playerRect.w = resW/64;
-    playerRect.h = resH/64;
+    playerRect.w = 512/64;
+    playerRect.h = 512/64;
     playerRect.x = resW/2 - playerRect.w/2;
     playerRect.y = resH/2 - playerRect.h/2;
     
