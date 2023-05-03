@@ -293,23 +293,23 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
 
 }
 
+
+int resW = 512 + 512, resH = 512; //1440
+bool upArrowDown = false, leftArrowDown = false, downArrowDown = false, rightArrowDown = false;
+bool appIsRunning = true;
+
 int main(int argc, char const *argv[]) {
 
-    int resW = 512 + 512, resH = 512; //1440
     SDL_Rect playerRect;
     playerRect.w = 512/64;
     playerRect.h = 512/64;
     playerRect.x = resW/2 - playerRect.w/2;
     playerRect.y = resH/2 - playerRect.h/2;
     
-    bool upArrowDown = false, leftArrowDown = false, downArrowDown = false, rightArrowDown = false;
-
     SDL_Window *window = nullptr;
     SDL_Renderer *renderer = nullptr;
-    bool appIsRunning = true;
-    
-    //Uint64 lastDrawTime = SDL_GetTicks64();
 
+    // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cout << "SDL could not be initialized: " << SDL_GetError();
     }
@@ -333,7 +333,8 @@ int main(int argc, char const *argv[]) {
         printf("Could not create window: %s\n", SDL_GetError());
         return 1;
     }
-
+    
+    // Create the renderer
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if (renderer == NULL) {
@@ -345,18 +346,19 @@ int main(int argc, char const *argv[]) {
     // Runs the main game frames
     while (appIsRunning) {
 
-        
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
+        // Function to draw the 2d Map
         drawMap2D(renderer);
+
         // Handle new events
         handleEvent( &appIsRunning, &upArrowDown, &downArrowDown, &leftArrowDown, &rightArrowDown);
 
         // Handle movement of character
         moveRectangle(&playerRect, resW, resH, upArrowDown, downArrowDown, leftArrowDown, rightArrowDown);
-
-        SDL_SetRenderDrawColor(renderer, 0, 105, 180, SDL_ALPHA_OPAQUE);
+        
+        // Draw the 3D raycast
         drawRays3D(&playerRect, renderer);       
 
         SDL_SetRenderDrawColor(renderer, 255, 105, 180, SDL_ALPHA_OPAQUE);
@@ -366,6 +368,8 @@ int main(int argc, char const *argv[]) {
         
     }
 
+
+    // Code to exit and cleanup the program
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
     std::cout << "exiting..." << std::endl;
