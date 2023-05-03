@@ -4,6 +4,35 @@
 #define PI 3.14259265
 #define Rad PI/1440 //This is actually an eigth radian
 
+
+int resW = 512 + 512, resH = 512;
+int mapX = 16, mapY = 16;
+bool upArrowDown = false, leftArrowDown = false, downArrowDown = false, rightArrowDown = false;
+bool appIsRunning = true;
+float angle =0, pdx =10, pdy =10;
+
+int map[] = {
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,
+    1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,0,0,1,1,0,0,0,0,0,0,1,0,0,0,1,
+    1,0,0,0,1,0,1,1,0,0,0,0,0,0,0,1,
+    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+
+};
+
+
+
 void handleEvent(bool *appIsRunning, bool *upArrowDown, bool *downArrowDown, bool *leftArrowDown, bool *rightArrowDown) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -43,7 +72,6 @@ void handleEvent(bool *appIsRunning, bool *upArrowDown, bool *downArrowDown, boo
 }
 
 
-float angle =0, pdx =10, pdy =10;
 
 void moveRectangle (SDL_Rect *playerRect, int resW, int resH, bool upArrowDown, bool downArrowDown, bool leftArrowDown, bool rightArrowDown) {
 
@@ -85,58 +113,18 @@ void moveRectangle (SDL_Rect *playerRect, int resW, int resH, bool upArrowDown, 
 
 }
 
-int map[] = {
-        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,
-        1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,1,1,0,0,0,0,0,0,1,0,0,0,1,
-        1,0,0,0,1,0,1,1,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-
-};
-/*
-int map[] = {
-        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-
-};
-*/
-// X=32
-int mapX = 16, mapY = 16;
 
 void drawMap2D(SDL_Renderer *renderer) {
     int x0,y0;
     for(int x =0; x< mapX; x++) {
         for(int y=0; y< mapY; y++) { 
-                SDL_Rect wall;
-                wall.x = x*(512/mapX)+1; //1440
-                wall.y = y*(512/mapY)+1;
-                wall.w = (512/mapX)-1; //1440
-                wall.h = (512/mapY)-1;
+
+            SDL_Rect wall;
+            wall.x = x*(resW/mapX/2)+1; //1440
+            wall.y = y*(resH/mapY)+1;
+            wall.w = (resW/mapX/2)-1; //1440
+            wall.h = (resH/mapY)-1;
+
             if(map[y*mapX + x]==1) {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &wall);
@@ -163,7 +151,7 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
     if(rayAngle > 2*PI) rayAngle -= 2*PI;
     
     for (int r=0; r<512; r++){ 
-        // Check Horizontal lines
+        // Check Horizontal lines for ray collisions
         dof=0;
         float distH = 10000000, hx=playerRect->x, hy=playerRect->y;
         float aTan = -1/tan(rayAngle);
@@ -190,11 +178,11 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
             dof = 8;
         }
 
+        // Cast rays at a length of 'dof' 
         while(dof<16){
-            mx=(int)(rayX)>>5; 
-            my=(int)(rayY)>>5; 
+            mx=(int)(rayX)>>bitshift; 
+            my=(int)(rayY)>>bitshift; 
             mp=my*mapX+mx;
-          //  std::cout << mp <<std::endl;
             if(0<mp && mp<mapX*mapY && map[mp]==1) { //Hit a wall
                 hx = rayX;
                 hy = rayY;
@@ -206,7 +194,7 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
                 rayY += yo;
                 dof +=1;
             }
-        }
+        } 
     
         // Check Vertical lines
         dof=0;
@@ -233,8 +221,8 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
         }
 
         while(dof<16){
-            mx=(int)(rayX)>>5; 
-            my=(int)(rayY)>>5; 
+            mx=(int)(rayX)>>bitshift; 
+            my=(int)(rayY)>>bitshift; 
             mp=my*mapX+mx;
           //  std::cout << mp <<std::endl;
             if( mp>0 && mp<mapX*mapY && map[mp]==1) { //Hit a wall
@@ -294,16 +282,12 @@ void drawRays3D(SDL_Rect *playerRect, SDL_Renderer *renderer){
 }
 
 
-int resW = 512 + 512, resH = 512; //1440
-bool upArrowDown = false, leftArrowDown = false, downArrowDown = false, rightArrowDown = false;
-bool appIsRunning = true;
-
 int main(int argc, char const *argv[]) {
 
     SDL_Rect playerRect;
     playerRect.w = 512/64;
     playerRect.h = 512/64;
-    playerRect.x = resW/2 - playerRect.w/2;
+    playerRect.x = resW/4 - playerRect.w/2;
     playerRect.y = resH/2 - playerRect.h/2;
     
     SDL_Window *window = nullptr;
