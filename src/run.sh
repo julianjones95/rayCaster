@@ -13,7 +13,7 @@ rm out
 set -u -e
 
 # Compile it and output to executable called 'out'
-clang++ app.cpp -I/Library/Frameworks/SDL2.framework/Headers -F/Library/Frameworks -framework SDL2 -o out
+clang++ *.cpp -I/Library/Frameworks/SDL2.framework/Headers -F/Library/Frameworks -framework SDL2 -o out
 
 # runs the out
 ./out
